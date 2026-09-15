@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "_comment": "Parameters for the upstream Stage 03 sample (./sample/main.bicep). Fill the <...> values from Stage 01 outputs. reuseExistingSubnets MUST be true so the sample consumes our VNet/subnets instead of resetting them.",
+  "parameters": {
+    "location":              { "value": "eastus2" },
+    "aiServices":            { "value": "ffndry" },
+
+    "existingVnetResourceId":{ "value": "<STAGE01_vnetId>" },
+    "agentSubnetName":       { "value": "snet-agents" },
+    "peSubnetName":          { "value": "snet-pe" },
+    "reuseExistingSubnets":  { "value": true },
+
+    "disableLocalAuth":      { "value": true },
+
+    "modelName":             { "value": "gpt-4.1" },
+    "modelFormat":           { "value": "OpenAI" },
+    "modelVersion":          { "value": "2025-04-14" },
+    "modelSkuName":          { "value": "GlobalStandard" },
+    "modelCapacity":         { "value": 30 },
+
+    "firstProjectName":      { "value": "fabricagent" },
+    "projectCapHost":        { "value": "caphostproj" },
+
+    "_note_byo":             "Leave aiSearchResourceId / azureStorageAccountResourceId / azureCosmosDBAccountResourceId EMPTY to have the sample create new BYO resources (our design). Set them only to reuse existing ones.",
+    "aiSearchResourceId":            { "value": "" },
+    "azureStorageAccountResourceId": { "value": "" },
+    "azureCosmosDBAccountResourceId":{ "value": "" }
+  }
+}

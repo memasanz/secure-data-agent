@@ -1,0 +1,30 @@
+# --- Bicep / ARM build artifacts ---
+**/main.json
+*.arm.json
+!**/foundry.parameters.example.json
+
+# --- Local deployment outputs / state (may contain resource IDs, IPs) ---
+infra/.stage01-outputs.json
+infra/**/.stage*-outputs.json
+*.outputs.json
+
+# --- Fetched upstream sample (Stage 03) ---
+infra/03-foundry/sample/
+
+# --- Secrets / local config ---
+*.env
+.env
+.env.*
+*.local.bicepparam
+*.secrets.*
+azureauth.json
+
+# --- Azure CLI / tooling ---
+.azure/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
