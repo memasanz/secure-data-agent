@@ -21,7 +21,7 @@
     "firstProjectName":      { "value": "fabricagent" },
     "projectCapHost":        { "value": "caphostproj" },
 
-    "aiSearchResourceId":            { "value": "" },
+    "aiSearchResourceId":            { "value": "/subscriptions/7ee2b43a-eaea-4259-be7b-c8c220bfbcf9/resourceGroups/rg-fabric-foundry-eus2/providers/Microsoft.Search/searchServices/ffndry-search-westus2" },
     "azureStorageAccountResourceId": { "value": "" },
     "azureCosmosDBAccountResourceId":{ "value": "" }
   }
