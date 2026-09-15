@@ -15,13 +15,13 @@ param gatewayName string = 'vpngw-fabric-foundry'
 @description('Resource ID of the GatewaySubnet.')
 param gatewaySubnetId string
 
-@description('Gateway SKU. VpnGw1 is sufficient for testing / small teams.')
+@description('Gateway SKU. Only zone-redundant AZ SKUs are supported for new VPN gateways.')
 @allowed([
-  'VpnGw1'
-  'VpnGw2'
-  'VpnGw3'
+  'VpnGw1AZ'
+  'VpnGw2AZ'
+  'VpnGw3AZ'
 ])
-param gatewaySku string = 'VpnGw1'
+param gatewaySku string = 'VpnGw1AZ'
 
 @description('P2S VPN client address pool. MUST NOT overlap the VNet address space.')
 param vpnClientAddressPool string = '172.16.0.0/24'
@@ -38,6 +38,11 @@ resource pip 'Microsoft.Network/publicIPAddresses@2023-11-01' = {
   sku: {
     name: 'Standard'
   }
+  zones: [
+    '1'
+    '2'
+    '3'
+  ]
   properties: {
     publicIPAllocationMethod: 'Static'
   }
