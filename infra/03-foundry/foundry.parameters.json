@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location":              { "value": "eastus2" },
+    "aiServices":            { "value": "ffndry" },
+
+    "existingVnetResourceId":{ "value": "/subscriptions/7ee2b43a-eaea-4259-be7b-c8c220bfbcf9/resourceGroups/rg-fabric-foundry-eus2/providers/Microsoft.Network/virtualNetworks/vnet-fabric-foundry" },
+    "agentSubnetName":       { "value": "snet-agents" },
+    "peSubnetName":          { "value": "snet-pe" },
+    "reuseExistingSubnets":  { "value": true },
+
+    "disableLocalAuth":      { "value": true },
+
+    "modelName":             { "value": "gpt-5.1" },
+    "modelFormat":           { "value": "OpenAI" },
+    "modelVersion":          { "value": "2025-11-13" },
+    "modelSkuName":          { "value": "GlobalStandard" },
+    "modelCapacity":         { "value": 30 },
+
+    "firstProjectName":      { "value": "fabricagent" },
+    "projectCapHost":        { "value": "caphostproj" },
+
+    "aiSearchResourceId":            { "value": "" },
+    "azureStorageAccountResourceId": { "value": "" },
+    "azureCosmosDBAccountResourceId":{ "value": "" }
+  }
+}
