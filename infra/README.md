@@ -18,8 +18,10 @@ Everything targets **eastus2** and a **single resource group**. The VNet uses
 | 04 | `04-fabric/` | **Fabric capacity (F SKU)** + **workspace-level private link** + private endpoint (`snet-pe`) + `privatelink.fabric.microsoft.com` DNS | This repo |
 
 Stage 03 reuses the upstream **microsoft-foundry/foundry-samples** template
-(`15-private-network-standard-agent-setup`) rather than re-implementing its fragile
-capability-host logic. Stages 01/02 add the VNet and inbound access the sample omits.
+([`15-private-network-standard-agent-setup`](https://github.com/microsoft-foundry/foundry-samples/tree/main/infrastructure/infrastructure-setup-bicep/15-private-network-standard-agent-setup))
+rather than re-implementing its fragile capability-host logic. Stages 01/02 add the VNet and inbound
+access the sample omits. `03-foundry/get-foundry-sample.ps1` sparse-clones that subpath into
+`03-foundry/sample/`.
 
 ## Prerequisites
 

@@ -116,7 +116,8 @@ Full design rationale, decisions, and open items:
 ```
 
 Stage 03 reuses the upstream **microsoft-foundry/foundry-samples**
-`15-private-network-standard-agent-setup` template rather than re-implementing its fragile
+[`15-private-network-standard-agent-setup`](https://github.com/microsoft-foundry/foundry-samples/tree/main/infrastructure/infrastructure-setup-bicep/15-private-network-standard-agent-setup)
+template rather than re-implementing its fragile
 capability-host logic. Stages 01/02 add the VNet and inbound access the sample omits; stage 04 adds
 the Fabric capacity, workspace, and workspace-level private link.
 
