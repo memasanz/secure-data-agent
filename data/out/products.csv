@@ -1,0 +1,31 @@
+product_id,product_name,category,unit_price
+P0001,Headphones,Electronics,388.22
+P0002,Monitor,Electronics,37.33
+P0003,Keyboard,Electronics,314.36
+P0004,Webcam,Electronics,111.89
+P0005,Router,Electronics,252.32
+P0006,SSD,Electronics,163.81
+P0007,Coffee Maker,Home,39.48
+P0008,Blender,Home,136.8
+P0009,Vacuum,Home,272.35
+P0010,Air Purifier,Home,217.18
+P0011,Lamp,Home,382.02
+P0012,Cookware Set,Home,253.71
+P0013,T-Shirt,Apparel,355.88
+P0014,Jacket,Apparel,199.28
+P0015,Sneakers,Apparel,220.08
+P0016,Backpack,Apparel,250.04
+P0017,Hat,Apparel,100.03
+P0018,Socks,Apparel,276.28
+P0019,Notebook,Office,120.65
+P0020,Pen Set,Office,97.17
+P0021,Desk Organizer,Office,43.43
+P0022,Chair,Office,391.51
+P0023,Stapler,Office,306.06
+P0024,Whiteboard,Office,283.93
+P0025,Tent,Outdoors,47.4
+P0026,Water Bottle,Outdoors,73.21
+P0027,Cooler,Outdoors,125.39
+P0028,Hiking Poles,Outdoors,19.35
+P0029,Sleeping Bag,Outdoors,135.15
+P0030,Lantern,Outdoors,30.0

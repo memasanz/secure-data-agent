@@ -1,0 +1,201 @@
+customer_id,customer_name,region,segment,signup_date
+C0001,Taylor Smith,Central,Consumer,2024-08-16
+C0002,Morgan Garcia,Northwest,Consumer,2025-08-27
+C0003,Parker Johnson,West,Consumer,2024-08-11
+C0004,Jamie Smith,Northwest,Consumer,2025-10-27
+C0005,Parker Kim,South,Home Office,2024-10-11
+C0006,Alex Nguyen,South,Corporate,2024-10-11
+C0007,Morgan Brown,Central,Consumer,2024-04-04
+C0008,Reese Garcia,Central,Corporate,2025-09-10
+C0009,Avery Johnson,South,Home Office,2024-05-07
+C0010,Reese Lee,Northwest,Corporate,2025-10-05
+C0011,Cameron Brown,West,Consumer,2025-11-08
+C0012,Jamie Davis,West,Consumer,2024-04-13
+C0013,Reese Martinez,South,Home Office,2025-01-08
+C0014,Casey Wilson,Central,Consumer,2025-11-17
+C0015,Avery Lee,Northwest,Home Office,2024-06-24
+C0016,Jamie Nguyen,South,Corporate,2024-10-03
+C0017,Jamie Lopez,West,Consumer,2024-02-02
+C0018,Drew Anderson,Central,Consumer,2024-08-04
+C0019,Drew Brown,South,Corporate,2025-10-20
+C0020,Hayden Patel,Central,Consumer,2024-09-09
+C0021,Avery Clark,Northwest,Corporate,2025-01-05
+C0022,Jamie Patel,Northwest,Corporate,2024-04-03
+C0023,Sam Garcia,East,Home Office,2024-06-12
+C0024,Parker Lee,South,Corporate,2025-09-02
+C0025,Hayden Martinez,Northwest,Consumer,2025-11-27
+C0026,Taylor Martinez,Central,Consumer,2024-10-27
+C0027,Parker Nguyen,South,Consumer,2024-09-26
+C0028,Casey Garcia,Central,Home Office,2025-06-03
+C0029,Riley Patel,Central,Consumer,2025-07-06
+C0030,Alex Lopez,South,Consumer,2024-04-24
+C0031,Cameron Davis,East,Consumer,2024-09-03
+C0032,Jordan Lee,South,Consumer,2025-06-29
+C0033,Morgan Patel,South,Home Office,2024-06-18
+C0034,Avery Clark,East,Home Office,2025-12-07
+C0035,Riley Davis,South,Home Office,2025-10-27
+C0036,Cameron Wright,Northwest,Corporate,2024-05-03
+C0037,Jamie Kim,West,Corporate,2024-01-22
+C0038,Jamie Kim,West,Consumer,2025-12-25
+C0039,Sam Kim,West,Consumer,2024-12-04
+C0040,Jordan Kim,Central,Home Office,2025-05-12
+C0041,Riley Patel,Northwest,Home Office,2025-04-29
+C0042,Jamie Hall,South,Consumer,2024-04-06
+C0043,Taylor Clark,Central,Corporate,2025-02-24
+C0044,Hayden Johnson,West,Consumer,2025-02-16
+C0045,Drew Garcia,East,Consumer,2024-07-13
+C0046,Hayden Patel,South,Consumer,2024-10-12
+C0047,Hayden Kim,West,Corporate,2025-07-17
+C0048,Taylor Johnson,Northwest,Consumer,2024-04-05
+C0049,Jamie Nguyen,South,Corporate,2025-05-07
+C0050,Riley Anderson,West,Consumer,2025-01-23
+C0051,Alex Anderson,Central,Corporate,2024-10-19
+C0052,Parker Hall,East,Consumer,2024-10-30
+C0053,Riley Johnson,Northwest,Home Office,2025-07-09
+C0054,Sam Lopez,West,Consumer,2025-08-21
+C0055,Rowan Nguyen,West,Home Office,2024-03-23
+C0056,Casey Lee,Northwest,Consumer,2025-11-22
+C0057,Jamie Anderson,West,Home Office,2024-09-09
+C0058,Sam Lee,South,Home Office,2025-08-20
+C0059,Drew Martinez,East,Home Office,2024-11-17
+C0060,Jamie Martinez,South,Consumer,2025-11-18
+C0061,Quinn Wright,Central,Consumer,2024-01-10
+C0062,Hayden Garcia,West,Home Office,2024-08-06
+C0063,Avery Patel,Central,Consumer,2024-09-07
+C0064,Cameron Davis,East,Corporate,2025-07-10
+C0065,Quinn Smith,Northwest,Corporate,2025-11-10
+C0066,Taylor Patel,Central,Consumer,2024-04-19
+C0067,Morgan Martinez,Central,Home Office,2024-08-03
+C0068,Drew Brown,Central,Home Office,2025-05-15
+C0069,Avery Johnson,West,Home Office,2025-03-09
+C0070,Avery Johnson,West,Corporate,2024-05-13
+C0071,Avery Nguyen,South,Home Office,2025-12-23
+C0072,Parker Smith,West,Consumer,2025-12-08
+C0073,Morgan Johnson,Central,Home Office,2025-07-19
+C0074,Morgan Clark,East,Consumer,2024-11-11
+C0075,Cameron Johnson,Central,Consumer,2025-11-29
+C0076,Jamie Garcia,Central,Home Office,2025-02-20
+C0077,Morgan Kim,East,Consumer,2025-02-26
+C0078,Alex Nguyen,Central,Corporate,2025-11-16
+C0079,Jamie Martinez,East,Home Office,2024-04-20
+C0080,Reese Johnson,South,Consumer,2024-07-23
+C0081,Hayden Wilson,Central,Consumer,2024-08-16
+C0082,Alex Brown,South,Corporate,2024-10-12
+C0083,Jordan Martinez,Central,Home Office,2025-06-05
+C0084,Reese Lopez,West,Consumer,2024-09-24
+C0085,Casey Martinez,West,Consumer,2025-09-02
+C0086,Parker Wilson,Central,Corporate,2025-09-12
+C0087,Taylor Anderson,Northwest,Consumer,2024-09-17
+C0088,Sam Clark,West,Home Office,2025-07-05
+C0089,Riley Wilson,South,Consumer,2025-11-11
+C0090,Drew Lopez,West,Home Office,2024-11-03
+C0091,Quinn Clark,Central,Corporate,2025-12-14
+C0092,Quinn Patel,East,Corporate,2025-11-11
+C0093,Reese Nguyen,Northwest,Home Office,2024-11-04
+C0094,Reese Smith,Central,Corporate,2024-08-03
+C0095,Parker Lopez,South,Corporate,2025-03-28
+C0096,Riley Hall,East,Home Office,2024-03-27
+C0097,Quinn Lopez,West,Consumer,2025-11-19
+C0098,Quinn Kim,East,Consumer,2024-01-26
+C0099,Sam Kim,South,Home Office,2024-03-15
+C0100,Hayden Clark,Northwest,Consumer,2025-12-14
+C0101,Reese Hall,South,Consumer,2024-05-31
+C0102,Alex Garcia,South,Consumer,2024-06-29
+C0103,Hayden Johnson,Northwest,Consumer,2024-05-04
+C0104,Hayden Patel,South,Home Office,2025-06-27
+C0105,Drew Wright,Northwest,Home Office,2025-05-31
+C0106,Parker Wright,East,Home Office,2025-05-01
+C0107,Hayden Martinez,East,Home Office,2024-10-10
+C0108,Rowan Kim,Central,Corporate,2024-03-20
+C0109,Quinn Kim,Central,Corporate,2024-11-23
+C0110,Jordan Patel,East,Consumer,2025-01-27
+C0111,Morgan Brown,West,Corporate,2025-02-21
+C0112,Drew Wright,South,Consumer,2024-07-30
+C0113,Parker Anderson,Northwest,Home Office,2024-01-21
+C0114,Reese Hall,West,Corporate,2024-11-01
+C0115,Reese Clark,Northwest,Home Office,2025-07-13
+C0116,Jamie Hall,East,Corporate,2025-03-22
+C0117,Rowan Smith,South,Corporate,2025-11-15
+C0118,Reese Nguyen,South,Consumer,2025-09-29
+C0119,Alex Anderson,Northwest,Home Office,2025-11-09
+C0120,Alex Lee,South,Consumer,2025-04-17
+C0121,Casey Johnson,Central,Corporate,2024-12-01
+C0122,Riley Wright,Central,Corporate,2025-01-23
+C0123,Avery Clark,Central,Consumer,2025-04-26
+C0124,Alex Johnson,Central,Consumer,2025-10-27
+C0125,Jordan Johnson,West,Consumer,2024-07-23
+C0126,Alex Patel,East,Consumer,2025-04-29
+C0127,Taylor Brown,South,Home Office,2024-09-19
+C0128,Cameron Nguyen,Northwest,Home Office,2024-04-27
+C0129,Casey Davis,West,Home Office,2024-01-27
+C0130,Quinn Anderson,South,Home Office,2024-07-22
+C0131,Jordan Kim,West,Home Office,2024-11-04
+C0132,Taylor Johnson,Central,Home Office,2025-03-14
+C0133,Cameron Lee,Northwest,Home Office,2024-12-15
+C0134,Alex Clark,South,Consumer,2025-03-19
+C0135,Cameron Wright,East,Corporate,2024-06-29
+C0136,Avery Hall,South,Corporate,2025-08-29
+C0137,Avery Lopez,East,Consumer,2024-10-12
+C0138,Hayden Kim,South,Home Office,2025-09-16
+C0139,Reese Lopez,West,Corporate,2024-11-28
+C0140,Casey Hall,East,Corporate,2024-09-21
+C0141,Drew Martinez,Northwest,Home Office,2024-10-09
+C0142,Alex Brown,West,Consumer,2025-02-20
+C0143,Rowan Kim,South,Home Office,2025-12-29
+C0144,Rowan Wright,West,Consumer,2024-10-28
+C0145,Jamie Anderson,East,Corporate,2025-11-10
+C0146,Cameron Hall,Northwest,Home Office,2024-12-18
+C0147,Parker Lopez,Central,Home Office,2025-04-09
+C0148,Avery Davis,Central,Consumer,2024-05-03
+C0149,Riley Lopez,West,Home Office,2025-07-02
+C0150,Casey Brown,East,Home Office,2025-05-10
+C0151,Avery Davis,West,Consumer,2024-10-30
+C0152,Jamie Wilson,East,Corporate,2024-01-15
+C0153,Morgan Martinez,West,Consumer,2025-07-20
+C0154,Quinn Patel,South,Consumer,2024-01-13
+C0155,Quinn Hall,South,Corporate,2024-12-14
+C0156,Casey Johnson,Central,Corporate,2024-04-26
+C0157,Jordan Anderson,South,Consumer,2025-08-13
+C0158,Sam Patel,East,Home Office,2024-11-07
+C0159,Jordan Kim,West,Home Office,2025-03-02
+C0160,Jamie Anderson,South,Corporate,2024-10-31
+C0161,Parker Davis,Northwest,Home Office,2024-03-02
+C0162,Taylor Brown,East,Corporate,2025-11-07
+C0163,Jordan Nguyen,East,Consumer,2025-07-19
+C0164,Jordan Nguyen,West,Corporate,2025-04-06
+C0165,Rowan Davis,West,Consumer,2024-10-22
+C0166,Quinn Wright,West,Home Office,2024-08-27
+C0167,Avery Brown,South,Consumer,2025-07-11
+C0168,Jamie Patel,Central,Consumer,2024-03-14
+C0169,Sam Nguyen,Central,Home Office,2025-08-05
+C0170,Quinn Wright,West,Corporate,2025-12-06
+C0171,Quinn Anderson,Central,Home Office,2025-07-06
+C0172,Rowan Wright,West,Home Office,2024-02-10
+C0173,Parker Lopez,Northwest,Corporate,2024-01-27
+C0174,Jordan Kim,Northwest,Home Office,2024-01-22
+C0175,Avery Johnson,East,Corporate,2025-06-15
+C0176,Hayden Martinez,East,Home Office,2025-03-22
+C0177,Rowan Lee,South,Corporate,2025-02-22
+C0178,Drew Lopez,West,Consumer,2024-12-03
+C0179,Parker Hall,Central,Home Office,2025-02-14
+C0180,Sam Wright,West,Corporate,2024-09-15
+C0181,Drew Garcia,South,Home Office,2024-01-02
+C0182,Hayden Clark,West,Consumer,2025-06-14
+C0183,Cameron Hall,South,Consumer,2024-07-27
+C0184,Avery Patel,Central,Corporate,2025-12-16
+C0185,Rowan Garcia,West,Home Office,2025-09-15
+C0186,Jamie Nguyen,Central,Home Office,2024-01-15
+C0187,Parker Lee,East,Consumer,2025-04-17
+C0188,Taylor Patel,South,Home Office,2024-10-25
+C0189,Avery Clark,South,Corporate,2024-09-06
+C0190,Hayden Patel,South,Consumer,2025-09-05
+C0191,Morgan Lee,Central,Corporate,2024-12-14
+C0192,Avery Smith,Central,Home Office,2024-11-01
+C0193,Rowan Patel,South,Home Office,2025-05-10
+C0194,Cameron Lopez,Northwest,Home Office,2025-01-21
+C0195,Hayden Lopez,East,Home Office,2024-09-01
+C0196,Reese Kim,South,Consumer,2024-11-21
+C0197,Rowan Anderson,South,Home Office,2025-10-29
+C0198,Morgan Hall,West,Consumer,2025-05-29
+C0199,Drew Garcia,South,Consumer,2025-06-22
+C0200,Hayden Smith,East,Corporate,2025-11-01

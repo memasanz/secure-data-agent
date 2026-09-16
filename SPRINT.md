@@ -177,3 +177,30 @@ question). The portal can complete an interactive OBO consent the SDK cannot tri
 
 **Cleanup pending:** throwaway test agents (`fabtest-*`, `retail-mdkeys`, `retail-insights`, `RetailInsightsAgent*`)
 and connections (`fabric-ds-clean`, `fabric-hyphen-test`, duplicate `fabric_dataagent_preview_*`).
+
+---
+
+## S3 — RESOLVED: root cause was an unpublished/stale data-agent publish
+
+**The Foundry↔Fabric run failure is FIXED.** After every other hypothesis was ruled out
+(network S1; connection key-format H3 solved via hyphenated `workspace-id`/`artifact-id`; capacity SKU —
+reassigned workspace to F16 and it still failed; region — crime agent that works is ALSO East US 2;
+data-agent config/publish parts all present), the actual fix was **re-publishing the Fabric data agent**.
+The published stage was stale/incomplete, so every external run failed "before producing a result" while
+the interactive draft worked. Once published:
+- Bare MCP run → `5,000 rows in the sales table` ✅
+- Foundry OBO native Fabric tool → `**5,000 rows**` with citation ✅ (on the dedicated **F4** `fabricfoundrycap`).
+
+**Phase 4 COMPLETE** — a Foundry prompt agent, via the native Microsoft Fabric tool (identity passthrough/OBO)
+over a portal- or REST-created `fabric_dataagent_preview` connection (hyphenated keys), answers questions
+grounded in the RetailSales lakehouse through the published `RetailSalesAgent` data agent.
+
+### Phase 5 — lockdown (in progress)
+- **Foundry**: already private — account `publicNetworkAccess=Disabled` + private endpoint (group `account`)
+  on `snet-pe`; PEs also for ACR, Search, Cosmos, Storage, Azure Monitor. ✅
+- **Fabric workspace**: Stage 04 deployed — `Microsoft.Fabric/privateLinkServicesForFabric` +
+  private endpoint into `snet-pe` (subresource `workspace`) + `privatelink.fabric.microsoft.com` DNS zone/link/group. ✅
+  Prereqs verified: `Microsoft.Fabric` RP Registered; tenant toggle `WorkspaceBlockInboundAccess=True`
+  (workspace-level inbound rules) ON; tenant-level PL/public-block correctly OFF.
+- **Next**: verify workspace FQDN resolves to a private IP over the VPN → run `set-deny-public-access.ps1`
+  → re-verify Foundry→Fabric OBO still routes (privately) and answers.
