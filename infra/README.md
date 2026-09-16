@@ -29,7 +29,7 @@ capability-host logic. Stages 01/02 add the VNet and inbound access the sample o
 ## Deploy
 
 ```powershell
-$RG  = 'rg-fabric-foundry-priv'
+$RG  = 'rg-fabric-foundry-eus2'
 $LOC = 'eastus2'
 az group create -n $RG -l $LOC
 
@@ -160,18 +160,61 @@ This workload uses **workspace-level** private link (scoped to one workspace), *
    settings** → **Allow connections from selected networks and workspace level private links** →
    **Apply**. Can take up to ~30 min to take effect.
 
-#### Outbound — Fabric → Foundry (managed private endpoint)
-8. Fabric → **Managed private endpoints** → create an MPE targeting the Foundry resource
-   (`ffndryfsnn`); **approve** the pending connection on the Foundry side (Networking → Private
-   endpoint connections). This MPE lives in a Microsoft-managed VNet — **no** customer VNet/VPN
-   required for this leg, and it is **not** ARM-deployable.
+#### Foundry → Fabric — connect the agent to the data agent (workspace-level private link)
+8. Once the workspace denies public access, the **native Foundry Fabric tool no longer works** — it
+   calls the shared `api.fabric.microsoft.com` host, which is now blocked (runs fail with **424**).
+   Instead, use the **Fabric IQ** tool with a **RemoteTool** connection that targets the
+   **workspace-specific private FQDN** and passes the signed-in user's Entra token (OBO). The Foundry
+   agent runtime is VNet-injected, so it resolves that FQDN to the private endpoint IP and reaches
+   the workspace entirely over the workspace-level private link:
+
+   | Connection property | Value |
+   |---------------------|-------|
+   | `category` | `RemoteTool` |
+   | `authType` | `UserEntraToken` (identity passthrough / OBO) |
+   | `target` | `https://{workspaceId-nodashes}.z{xy}.w.api.fabric.microsoft.com/v1/mcp/workspaces/{workspaceId}/dataagents/{dataAgentId}/agent` |
+   | `audience` | `https://analysis.windows.net/powerbi/api` (Power BI resource; `DataAgent.Execute.All` scope) |
+
+   Create it via REST (`PUT .../projects/{project}/connections/{name}?api-version=2025-10-01-preview`)
+   or `azd ai connection create ... --kind remote-tool --auth-type user-entra-token`, then reference
+   it from the agent through `FabricIQPreviewTool(project_connection_id=...)`
+   (SDK `azure-ai-projects >= 2.2.0`). A runnable end-to-end example is
+   [`../data/test_fabriciq_vnet.py`](../data/test_fabriciq_vnet.py).
+
+   > ⚠️ **Wrong-audience trap:** a connection with the correct `target` but `audience =
+   > https://api.fabric.microsoft.com` authenticates but is rejected for data-agent execution → the
+   > run fails with **424**. Use the Power BI audience above.
+   >
+   > ℹ️ **The data agent must be (re)published** before any external caller can run it — a stale
+   > published stage makes every external run fail while the interactive draft still works.
+
+9. **(Optional, reverse direction) Fabric → Foundry managed private endpoint.** Only needed if
+   *Fabric* must privately call the *Foundry* resource (e.g. to use a Foundry-hosted model from
+   Fabric) — it is **not** required for the Foundry→Fabric data-agent query flow above. Fabric →
+   **Managed private endpoints** → create an MPE targeting the Foundry resource (`ffndryfsnn`) and
+   **approve** it on the Foundry side (Networking → Private endpoint connections). This MPE lives in a
+   Microsoft-managed VNet — no customer VNet/VPN needed for this leg, and it is not ARM-deployable.
 
 > Docs: [Set up workspace-level private links](https://learn.microsoft.com/fabric/security/security-workspace-level-private-links-set-up)
 > · [Enable workspace inbound access protection](https://learn.microsoft.com/fabric/security/security-workspace-enable-inbound-access-protection)
+> · [Fabric IQ tool — virtual network support](https://learn.microsoft.com/azure/foundry/agents/how-to/tools/fabric-iq#virtual-network-support)
 
 ### RBAC for the agent (if not handled by the sample)
 Assign to the Foundry project managed identity: Cosmos DB Built-in Data Contributor;
 Search Index Data Contributor + Search Service Contributor; Storage Blob Data Contributor/Owner.
+
+### Data + agent wiring (from a P2S-connected machine)
+The Python scripts in [`../data/`](../data/) create the sample data, publish the Fabric data agent,
+create the Foundry connection, and verify the end-to-end query over the private link:
+
+```powershell
+python data/generate_retail_sales.py      # synthetic retail dataset -> data/out/*.csv
+python data/load_to_lakehouse.py          # load CSVs into the lakehouse
+python data/create_data_agent.py          # create + PUBLISH the Fabric data agent
+python data/setup_fabric_connection.py    # create the Foundry RemoteTool connection + agent
+$env:PYTHONIOENCODING = 'utf-8'
+python data/test_fabriciq_vnet.py         # end-to-end Foundry -> Fabric test (expects '5,000 rows')
+```
 
 ## Notes / gotchas
 - **Agent subnet address space**: keep it in 172.x / 192.x. This is why the VNet is 192.168.0.0/16.
