@@ -14,6 +14,7 @@ Everything targets **eastus2** and a **single resource group**. The VNet uses
 | 01 | `01-network/` | VNet + 4 subnets (`snet-pe`, `snet-agents`, `snet-dnsresolver`, `GatewaySubnet`) + NSGs | This repo |
 | 02 | `02-access/` | **P2S VPN Gateway** (Entra auth) + **Azure DNS Private Resolver** | This repo |
 | 03 | `03-foundry/` | Foundry account + **BYO Storage/Search/Cosmos** + private endpoints + agent capability host | Upstream Microsoft sample |
+| 04 | `04-fabric/` | **Fabric workspace-level private link** + private endpoint (`snet-pe`) + `privatelink.fabric.microsoft.com` DNS | This repo |
 
 Stage 03 reuses the upstream **microsoft-foundry/foundry-samples** template
 (`15-private-network-standard-agent-setup`) rather than re-implementing its fragile
@@ -73,13 +74,53 @@ az deployment group create -g $RG `
 2. Import the profile into the **Azure VPN Client** and sign in with Entra ID.
 3. Verify: `nslookup <foundry-account>.services.ai.azure.com` resolves to a **192.168.x** (private) IP.
 
-### Fabric (portal / Fabric admin — NOT Bicep)
-Fabric private link and workspace settings are **not** ARM-deployable; configure them in Fabric:
-1. **Fabric Admin portal → Tenant settings** → enable **Azure Private Link** (provisions the tenant/workspace private-link resource).
-2. On the target **workspace** → **Network security → Workspace-level private link** → create the
-   private endpoint into `snet-pe`, then **disable public access** for the workspace.
-3. Fabric → **Managed private endpoints** → create an MPE targeting the Foundry resource; **approve**
-   the pending connection on the Foundry resource (Networking → Private endpoint connections).
+### Fabric (workspace-level private link)
+Fabric tenant/workspace *settings* are configured in Fabric, but the **private-link resource,
+private endpoint, and DNS are now deployed by Stage 04** (`infra/04-fabric/`).
+This workload uses **workspace-level** private link (scoped to one workspace), **not** tenant-level.
+
+> ⚠️ **Do not enable the tenant-level "Azure Private Link" setting.** That is the *tenant-level*
+> flow and locks down **every** workspace in the tenant. Workspace-level uses a different toggle
+> (`Configure workspace-level inbound network rules`) that only *permits* per-workspace rules.
+
+#### Inbound — lock down the workspace (workspace-level private link)
+1. **Prereq — capacity**: the workspace must be on a **Fabric capacity (F SKU)**. P (Premium) and
+   trial capacities are **not** supported. (Workspace settings → License info.)
+2. **Prereq — tenant toggle**: a Fabric admin enables **Tenant settings → `Configure workspace-level
+   inbound network rules`** (Enable workspace inbound access protection). This is *not* tenant-level
+   private link.
+3. **Prereq — resource provider** (first time in the tenant): in the Azure subscription, re-register
+   **`Microsoft.Fabric`** (Subscription → Resource providers → `Microsoft.Fabric` → **Re-register**).
+4. Note your **workspace ID** (from the portal URL after `/groups/`) and **tenant ID**
+   (Fabric portal → **?** → About Power BI → `ctid`).
+5. **Deploy Stage 04** — this creates the Fabric private-link resource
+   (`Microsoft.Fabric/privateLinkServicesForFabric`), the **private endpoint into `snet-pe`**
+   (subresource `workspace`), and the **`privatelink.fabric.microsoft.com`** DNS zone + VNet link +
+   DNS group. Set `workspaceId` in the bicepparam first:
+   ```powershell
+   # edit infra/04-fabric/main.bicepparam -> set workspaceId = '<your-fabric-workspace-guid>'
+   az deployment group create -g $RG `
+     -f infra/04-fabric/main.bicep -p infra/04-fabric/main.bicepparam
+   ```
+   > Because the DNS zone is linked to the VNet and the DNS Private Resolver lives there, the Fabric
+   > FQDN resolves for P2S clients automatically (same pattern as Foundry/Search/Storage/Cosmos).
+6. **Verify from a P2S-connected machine** (no Bastion/VM needed — the Learn article uses Bastion+VM
+   only because it assumes no existing inbound path; you already have the VPN + resolver):
+   `nslookup {workspaceid}.z{xy}.w.api.fabric.microsoft.com` → returns a **private** IP
+   (`workspaceid` = workspace object ID without dashes; `xy` = its first two characters).
+7. **Deny public access**: Workspace settings → **Inbound networking** → **Workspace connection
+   settings** → **Allow connections from selected networks and workspace level private links** →
+   **Apply**. Can take up to ~30 min to take effect. (This step is a Fabric workspace communication
+   policy — **not** ARM-deployable; use the portal or the Fabric REST API.)
+
+#### Outbound — Fabric → Foundry (managed private endpoint)
+8. Fabric → **Managed private endpoints** → create an MPE targeting the Foundry resource
+   (`ffndryfsnn`); **approve** the pending connection on the Foundry side (Networking → Private
+   endpoint connections). This MPE lives in a Microsoft-managed VNet — **no** customer VNet/VPN
+   required for this leg, and it is **not** ARM-deployable.
+
+> Docs: [Set up workspace-level private links](https://learn.microsoft.com/fabric/security/security-workspace-level-private-links-set-up)
+> · [Enable workspace inbound access protection](https://learn.microsoft.com/fabric/security/security-workspace-enable-inbound-access-protection)
 
 ### RBAC for the agent (if not handled by the sample)
 Assign to the Foundry project managed identity: Cosmos DB Built-in Data Contributor;
