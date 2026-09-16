@@ -56,6 +56,62 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 - [ ] 5.1 End-to-end: ask the Foundry agent a question answered from Fabric data
 - [ ] 5.2 Harden: restore Foundry `publicNetworkAccess=Disabled`; optionally deny Fabric public access
 
+## Spike S1 — Isolate the Foundry↔Fabric data-agent failure (network vs auth vs connection)
+
+**Status:** IN PROGRESS · **Time-box:** ~2h · **Entered:** 2026-09-16
+**Trigger:** The Fabric data agent works interactively in the Fabric portal, but (a) the bare MCP
+call from a script returns *"run failed before producing a result"*, and (b) the Foundry
+`fabric_dataagent_preview` tool (portal- and ARM-created connections) returns *"Workspace ID and
+Artifact ID are required from connection details"* / appears blocked in the portal playground.
+
+**Question:** Is the Foundry↔Fabric failure a **network** problem (agent runtime can't resolve/reach
+`api.fabric.microsoft.com` from the private VNet), an **auth/OBO** problem (calling identity lacks the
+delegated Copilot scopes the data-agent run needs), or a **preview connection** problem (tool can't
+read workspace/artifact IDs from a CLI/ARM-created connection)?
+
+**Hypotheses**
+- **H1 (network):** The agent runtime egresses through `snet-agents`; VNet DNS = private resolver
+  `192.168.1.36`, whose linked zones are all `privatelink.*` (no zone for public `api.fabric.microsoft.com`).
+  If the resolver doesn't recurse public names, or egress to Fabric is blocked, every tool call fails.
+- **H2 (auth/OBO):** The az-CLI client (and possibly the Foundry OBO exchange) lacks consent for the
+  Fabric data-agent AI run; the portal works because it uses Fabric's first-party client.
+- **H3 (connection preview gap):** The `fabric_dataagent_preview` tool can't extract workspace/artifact
+  IDs from a connection created via ARM/CLI (only portal-created ones store them where the runtime reads).
+- **H4 (cross-region):** Data-agent capacity region ≠ Foundry region → query can't execute.
+
+**Test matrix — ways to exercise the Fabric MCP tool OUTSIDE the Foundry agent**
+| # | Test | Isolates | Result |
+|---|------|----------|--------|
+| T1 | Resolve `api.fabric.microsoft.com` via the private resolver `192.168.1.36` (from VPN) | H1 DNS | ✅ resolves to **public** `20.41.4.110` (CNAME→api.powerbi.com→privatelink.analysis.windows.net→TM; no private zone linked → recurses public). DNS OK. |
+| T2 | From INSIDE the VNet (probe ACI/VM in `snet-pe`): nslookup + `curl -sS https://api.fabric.microsoft.com` | H1 DNS+egress | pending (probe) |
+| T3 | From inside the VNet: full MCP `call_tool` with a Fabric token (reproduce agent path) | H1 vs H2 | pending (probe) |
+| T4 | From my machine over the PUBLIC internet: MCP `call_tool` (endpoint is public) | H2 (network-independent) | ⚠️ run fails ("run failed before producing a result") over public path → **network-independent → auth** |
+| T5 | MCP Inspector (`npx @modelcontextprotocol/inspector`) against the endpoint with a token | client-independence | pending |
+| T6 | Fabric portal interactive chat | control (agent health) | ✅ works |
+| T7 | Compare Fabric capacity region vs Foundry region (`eastus2`) | H4 | ✅ both **East US 2** → H4 ruled out |
+
+**Interim finding (S1):** Network is **unlikely the root cause of the run failure** — DNS resolves the
+Fabric host to a public IP from the VNet resolver, capacity+Foundry are co-located in East US 2, the
+agent subnet's NSG permits internet egress, and the identical run failure reproduces over the fully
+public path from a client machine (T4). That leaves **H2 (auth/OBO consent)** as the run blocker and
+**H3 (preview connection ID-read)** as the Foundry-tool config blocker. The remaining open network
+question is only the **Foundry agent-runtime egress** from `snet-agents`; the exact portal error text
+(timeout vs auth) disambiguates whether the in-VNet probe (T2/T3) is needed.
+
+**T8 — Fabric network lockdown state (answers "isn't the MCP call blocked by private link?"):** The
+`publicNetworkAccess=Disabled` + private link is on the **Foundry account** (`services.ai.azure.com`),
+NOT on Fabric. Fabric tenant settings: `AllowAccessOverPrivateLinks=False`, `BlockAccessFromPublicNetworks=False`;
+the workspace has no inbound-block applied (we reach it and MCP discovery works). So `api.fabric.microsoft.com`
+is **still public** (Fabric lockdown = deferred, per D2) — which is exactly why the direct MCP call connects.
+If Fabric private link + public-block were on, the call would fail at connect/TLS, not at "run". Conclusion:
+**the MCP run failure is auth/consent, not a Fabric network/private-link issue.** (Locking down Fabric is
+Phase 5 hardening and would then *require* the private path.)
+
+**Exit criteria:** identify which hypothesis holds with evidence, and either fix it or record the exact
+manual step (per D4). If H1: add DNS forwarding / egress for Fabric. If H2: obtain a token from a
+consented client (portal connection or app registration). If H3: use portal-created connection. If H4:
+co-locate capacity + Foundry region.
+
 ## Status log
 | Time (UTC) | Phase | Update |
 |------------|-------|--------|
@@ -66,3 +122,6 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 | 2026-09-16T02:33 | 2 | 2.3 done — `customers`/`products`/`sales` written as Managed Delta tables, confirmed via Lakehouse tables API. Phase 2 complete. Starting Phase 3 (Fabric data agent). |
 | 2026-09-16T02:45 | 3 | 3.1 data agent `RetailSalesAgent` (`ef2b5550-…`) created via fabric-data-agent-sdk, lakehouse datasource added, **published**. 3.2 AI instructions set; validating via MCP endpoint next. Starting Phase 4 (Foundry agent + Fabric tool). |
 | 2026-09-16T03:05 | 3 | 3.2 config + data verified (SQL endpoint 5000/200/30; 18 cols selected/published; MCP tool discoverable). But live runs fail generically ("run failed before producing a result") for any question incl. "Hello", on both F4 and F16 — model/Copilot run failing, no API detail. Ruled out: capacity (both fail), tenant AOAI (enabled), table selection (done), data path (SQL works). Needs Fabric portal error msg to root-cause. Added pyodbc SQL check + MCP/inspect scripts. |
+| 2026-09-16T03:30 | 3→4 | **Data agent CONFIRMED WORKING interactively in the Fabric portal** (user ran a query successfully). Bare-script MCP call still fails — az-CLI token lacks the Copilot/AOAI delegation the run needs from a non-interactive client; this is a harness limitation, not an agent fault. Proper consumption path = the Foundry **Microsoft Fabric** tool (identity passthrough via a project connection). Marking 3.2 DONE (agent functional) and moving to Phase 4: build the Foundry agent + Fabric tool connection. |
+| 2026-09-16T05:10 | 4 | Built Phase 4: created Foundry project connection `fabric-retailsales` (ARM, CustomKeys w/ workspace_id+artifact_id) and a `gpt-5.1` prompt agent with `MicrosoftFabricPreviewTool`. Fixed an httpx2/brotli decoder crash (uninstalled Brotli). Tool call fails: *"Workspace ID and Artifact ID are required from connection details"* — tried keys/metadata/target/all case spellings, inline `additional_properties`, granted **Foundry Project Manager** (`Microsoft.CognitiveServices/*`). Setting `target=api.fabric.microsoft.com` changed the error (service now recognizes it as AzureFabric) but still can't read IDs → looks like a **preview gap for CLI/ARM-created connections**. User then added the tool via the **portal** and it also "seems blocked". Opened **Spike S1** to isolate network vs auth vs connection. |
+| 2026-09-16T05:40 | S1 | Spike S1 running. T1 ✅ Fabric host resolves to **public** IP via the private resolver; T7 ✅ capacity+Foundry both **East US 2**; NSG permits internet egress; T4 shows the run failure reproduces over the **public** path (network-independent). **Interim: not a network problem for the run** — root cause points to **auth/OBO consent (H2)** for the data-agent run + **preview connection ID-read (H3)** for the Foundry tool. Next: get exact portal error (timeout vs auth) and, if needed, run in-VNet probe (T2/T3). |
