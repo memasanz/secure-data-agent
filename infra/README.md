@@ -29,6 +29,37 @@ access the sample omits. `03-foundry/get-foundry-sample.ps1` sparse-clones that 
 - Rights to create the resources + assign RBAC (Owner or equivalent on the RG).
 - The resource providers listed in the spec registered on the subscription.
 
+## Networking — create a VNet or bring your own
+
+Stage 01 creates a compliant greenfield VNet. **You can skip Stage 01 and bring your own VNet**
+instead — every later stage consumes the VNet by parameter, not by hardcoded name:
+
+| Stage | VNet parameters |
+|-------|-----------------|
+| 02 (access) | `vnetId`, `dnsResolverSubnetId`, `gatewaySubnetId` |
+| 03 (Foundry) | `existingVnetResourceId`, `agentSubnetName`, `peSubnetName`, `reuseExistingSubnets: true` |
+| 04 (Fabric) | `existingVnetResourceId`, `peSubnetName` |
+
+To BYO VNet, the existing VNet must satisfy these **hard requirements** (they come from the Foundry
+Agent Service and private-endpoint platform, not this repo):
+
+- **Address space in `172.x` or `192.x`** — the Foundry agent injection subnet **cannot** be in
+  `10.x` (the platform rejects it).
+- **Agent injection subnet** (passed as `agentSubnetName`): **/27 or larger**, **empty**, and
+  **delegated to `Microsoft.App/environments`**. One agent environment per subnet.
+- **Private-endpoint subnet** (passed as `peSubnetName`): holds the Foundry/Fabric/Storage/Cosmos/
+  Search PE NICs; set **`privateEndpointNetworkPolicies: Disabled`**.
+- **DNS resolution for `privatelink.*`** must work from wherever callers run. Stage 02's DNS Private
+  Resolver provides this for P2S clients; if you BYO connectivity (ExpressRoute, hub/spoke, existing
+  resolver/forwarders), you can **skip Stage 02** and wire the `privatelink.*` zones to your own DNS.
+- **Only if you use Stage 02:** a **`GatewaySubnet`** (**/27+**, name exactly `GatewaySubnet`) and a
+  DNS-resolver subnet (**/28+**, delegated to `Microsoft.Network/dnsResolvers`).
+
+The subnet **names are flexible** (they're parameters) but the **delegations and network policies
+above are mandatory** regardless of name. `01-network/main.bicep` is the reference for exact
+sizes/delegations if you build the VNet yourself. When bringing your own VNet, start the runbook
+below at **Stage 02** (or **Stage 03** if you also bring your own connectivity + DNS).
+
 ## Deploy
 
 ```powershell

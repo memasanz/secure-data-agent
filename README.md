@@ -164,6 +164,9 @@ the VPN, and wiring the data agent) is in **[`infra/README.md`](infra/README.md)
 ## Key facts & gotchas
 
 - **Region:** `eastus2` (all resources co-located; Fabric capacity region must match).
+- **Bring your own VNet or create one:** Stage 01 creates a compliant VNet, but every later stage
+  takes the VNet/subnets as parameters, so you can skip Stage 01 and point at an existing VNet — see
+  [Networking — create a VNet or bring your own](infra/README.md#networking--create-a-vnet-or-bring-your-own).
 - **BYO is mandatory** for the private data-agent setup: your own Storage + AI Search + Cosmos DB.
 - **Agent subnet must be 172.x/192.x** — the platform rejects 10.x — hence the `192.168.0.0/16` VNet.
 - **P2S clients can't use Azure DNS (168.63.129.16)** directly; the **DNS Private Resolver** provides
