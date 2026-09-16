@@ -40,9 +40,9 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 - [ ] 1.3 Deploy **workspace private link** (`04-fabric/main.bicep`) → **DEFERRED to Phase 5** (per D2: locking down now would cut off the public REST automation; also needs an interactive tenant inbound-rules toggle)
 
 ### Phase 2 — Sample data → Lakehouse
-- [ ] 2.1 Generate synthetic **retail sales** dataset (CSV/Parquet)
-- [ ] 2.2 Create a **Lakehouse** in the workspace
-- [ ] 2.3 Load the data into the Lakehouse (OneLake / Fabric REST); confirm a queryable table
+- [x] 2.1 Generate synthetic **retail sales** dataset (CSV) → `data/generate_retail_sales.py` → 200 customers, 30 products, 5000 sales
+- [x] 2.2 Create a **Lakehouse** in the workspace → `RetailSales` = `0d46a133-70da-42bb-a23f-43019b7d605c` (SQL endpoint provisioned)
+- [ ] 2.3 Load the data into the Lakehouse (writing Delta tables to OneLake `Tables/` via delta-rs) — IN PROGRESS
 
 ### Phase 3 — Fabric data agent
 - [ ] 3.1 Create a **Fabric data agent** over the Lakehouse
@@ -62,3 +62,4 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 | 2026-09-15T~02:05 | 0 | Sprint plan created; starting Phase 1. |
 | 2026-09-15T~02:40 | 0 | VPN connected; PEs reachable on 443. Corp NRPT overrides push privatelink names to public DNS and no local admin — system DNS stays public. Foundry to stay private; Phase 4 will use `curl --resolve`. Capacity set to F4. |
 | 2026-09-16T02:22 | 1 | 1.1 F4 capacity `fabricfoundrycap` deployed (Active). 1.2 workspace `fabric-foundry-ws` (`98edd5b8-…`) created on it. 1.3 private-link DEFERRED to hardening (D2). Starting Phase 2 (data → Lakehouse). |
+| 2026-09-16T02:27 | 2 | 2.1 sample data generated (`data/generate_retail_sales.py`: 200 customers / 30 products / 5000 sales). 2.2 Lakehouse `RetailSales` (`0d46a133-…`) created, SQL endpoint provisioned. 2.3 loading Delta tables to OneLake `Tables/` via delta-rs — in progress. Also scrubbed identifiers + placeholdered capacity admin. |
