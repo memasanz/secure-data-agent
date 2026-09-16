@@ -248,3 +248,13 @@ instead of `https://analysis.windows.net/powerbi/api`) → token rejected for da
 P2S VPN (Azure VPN Client, import `azurevpnconfig.xml`), run:
 `$env:PYTHONIOENCODING="utf-8"; $env:MODEL_DEPLOYMENT_NAME="gpt-5.1"; python data\test_fabriciq_vnet.py`
 → expect `5,000 rows` with citation, routed entirely over the workspace private link (both services locked down).
+
+### S4 — VERIFIED ✅ (2026-09-16)
+Over the P2S VPN (VNet connectivity live: Foundry data plane 192.168.0.8:443 and Fabric PE
+192.168.0.26:443 both reachable), ran `data/test_fabriciq_vnet.py` with connection
+`fabriciq-dataagent-vnet` → **"There are 5,000 rows in the `sales` table."**
+
+**Foundry↔Fabric now communicate with BOTH services fully locked down** (Foundry publicNetworkAccess
+Disabled; Fabric workspace deny-public), routed entirely over the workspace-level private link via the
+`FabricIQPreviewTool` RemoteTool connection (UserEntraToken OBO, Power BI audience, workspace-specific FQDN).
+Phase 5 COMPLETE.
