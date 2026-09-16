@@ -13,7 +13,8 @@ Everything targets **eastus2** and a **single resource group**. The VNet uses
 |-------|------|-----------------|----------|
 | 01 | `01-network/` | VNet + 4 subnets (`snet-pe`, `snet-agents`, `snet-dnsresolver`, `GatewaySubnet`) + NSGs | This repo |
 | 02 | `02-access/` | **P2S VPN Gateway** (Entra auth) + **Azure DNS Private Resolver** | This repo |
-| 03 | `03-foundry/` | Foundry account + **BYO Storage/Search/Cosmos** + private endpoints + agent capability host | Upstream Microsoft sample |
+| 03 | `03-foundry/` | Foundry account + **BYO Storage/Cosmos** + private endpoints + agent capability host | Upstream Microsoft sample |
+| 03a | `03-foundry/search-byo.bicep` | **BYO AI Search in `westus2`** (eastus2/westus3 were out of Search capacity) — passed to the sample, which builds its cross-region private endpoint into `snet-pe` | This repo |
 | 04 | `04-fabric/` | **Fabric capacity (F SKU)** + **workspace-level private link** + private endpoint (`snet-pe`) + `privatelink.fabric.microsoft.com` DNS | This repo |
 
 Stage 03 reuses the upstream **microsoft-foundry/foundry-samples** template
@@ -57,11 +58,29 @@ az network vnet update -g $RG -n vnet-fabric-foundry --dns-servers $resolverIp
 
 # --- Stage 03: Foundry + BYO + private endpoints ---
 ./infra/03-foundry/get-foundry-sample.ps1
-# edit infra/03-foundry/foundry.parameters.example.json -> set existingVnetResourceId=$vnetId
+
+# 03a — BYO AI Search FIRST, in westus2 (eastus2/westus3 were out of Search capacity).
+# The sample then builds Search's cross-region private endpoint into snet-pe (eastus2).
+az deployment group create -g $RG `
+  -f infra/03-foundry/search-byo.bicep `
+  -p aiSearchName='ffndry-search-westus2'
+$searchId = az deployment group show -g $RG -n search-byo --query properties.outputs.aiSearchResourceId.value -o tsv
+
+# edit infra/03-foundry/foundry.parameters.example.json ->
+#   set existingVnetResourceId=$vnetId  AND  aiSearchResourceId=$searchId
 az deployment group create -g $RG `
   -f infra/03-foundry/sample/main.bicep `
   -p infra/03-foundry/foundry.parameters.example.json
 ```
+
+> **Why Search is deployed separately (region/capacity workaround):** `standard`/`basic` Azure AI
+> Search SKUs were **out of capacity in eastus2 and westus3**, so `search-byo.bicep` creates the
+> Search service in **westus2** (SKU `basic`, which supports AAD + private endpoints + vector search)
+> with `publicNetworkAccess=disabled` and AAD auth. Its resource ID is passed to the Foundry sample
+> via `aiSearchResourceId`; the sample builds the **cross-region private endpoint into `snet-pe`
+> (eastus2)** plus the `privatelink.search.windows.net` zone. Search therefore lives in westus2 while
+> its private endpoint + DNS live in the eastus2 VNet — still fully private. If eastus2 later has
+> capacity, set `location='eastus2'` in `search-byo.bicep` (or leave Search to the sample) instead.
 
 > The Stage 03 sample creates the private DNS zones for Foundry/Search/Cosmos/Storage and
 > links them to the VNet. Because the DNS Private Resolver lives in the same VNet, those zones
@@ -223,3 +242,7 @@ python data/test_fabriciq_vnet.py         # end-to-end Foundry -> Fabric test (e
   iterate on the DNS resolver alone first.
 - **Cosmos throughput**: Standard agent setup needs ≥ 3000 RU/s (5 containers × 1000). The sample
   provisions the account; the agent service creates the containers.
+- **AI Search region/capacity**: `eastus2` and `westus3` were **out of Search capacity** for
+  `standard`/`basic` SKUs, so Search is created in **westus2** via `03-foundry/search-byo.bicep` and
+  its private endpoint is built cross-region into `snet-pe` (eastus2). Check capacity before assuming
+  same-region Search; adjust `location` in `search-byo.bicep` if eastus2 frees up.
