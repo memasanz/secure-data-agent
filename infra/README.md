@@ -74,6 +74,30 @@ az deployment group create -g $RG `
 2. Import the profile into the **Azure VPN Client** and sign in with Entra ID.
 3. Verify: `nslookup <foundry-account>.services.ai.azure.com` resolves to a **192.168.x** (private) IP.
 
+#### If names still resolve to public IPs (corp-managed machines)
+
+On a corporate-managed device, **NRPT policies** can force names like `*.cognitiveservices.azure.com`,
+`*.services.ai.azure.com`, and `*.search.windows.net` to **corporate DNS**, which returns the **public**
+IPs. Because those services have `publicNetworkAccess=Disabled`, the public IPs are unreachable and the
+Foundry portal shows **"Private network access required"** — even though the VPN tunnel and the DNS
+Private Resolver are working (a plain `nslookup <host> 192.168.1.36` returns the private IP, but the
+system default resolver does not). These NRPT rules are more specific than the VPN's catch-all rule, so
+they win; fixing NRPT normally needs admin/GPO changes.
+
+Workaround — override just the specific FQDNs in the **hosts file** (it takes precedence over NRPT/DNS):
+
+```powershell
+# Requires the VPN connected. Self-elevates. Reads the private DNS zones and maps each
+# private-endpoint FQDN -> its private IP inside a clearly marked, reversible block.
+./infra/04-fabric/set-hosts-overrides.ps1
+
+# Undo:
+./infra/04-fabric/set-hosts-overrides.ps1 -Remove
+```
+
+For scripted/data-plane calls you can avoid touching DNS entirely by pinning the IP per request:
+`curl --resolve <host>:443:<privateIP> https://<host>/...` (correct SNI + valid cert, no admin).
+
 ### Fabric (workspace-level private link)
 Fabric tenant/workspace *settings* are configured in Fabric, but the **private-link resource,
 private endpoint, and DNS are now deployed by Stage 04** (`infra/04-fabric/`).
