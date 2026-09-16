@@ -258,3 +258,15 @@ Over the P2S VPN (VNet connectivity live: Foundry data plane 192.168.0.8:443 and
 Disabled; Fabric workspace deny-public), routed entirely over the workspace-level private link via the
 `FabricIQPreviewTool` RemoteTool connection (UserEntraToken OBO, Power BI audience, workspace-specific FQDN).
 Phase 5 COMPLETE.
+
+### Cleanup (2026-09-16)
+Removed all throwaway/stale Foundry artifacts, then re-verified the working path (`5,000 rows`).
+- Deleted agents: `fabtest-hyphen`, `fabtest-addprops`, `fabtest-idspreview`, `retail-mdkeys`,
+  `retail-insights`, `RetailInsightsAgent`, `RetailInsightsAgent2`, and empty stubs
+  `crimson-agent-*`, `lucid-agent-*` (all prompt agents now removed; the working flow creates an
+  ephemeral `fabriciq-vnet-test` per run and deletes it).
+- Deleted connections: `fabric-ds-clean`, `fabric-hyphen-test`, `RetailSalesAgent`, `RetailSalesAgent2`,
+  `fabric_dataagent_preview_e6b9b9`, `fabric_dataagent_preview_cea863`, `fabric-retailsales`,
+  `fabric_crime_manual`.
+- **Kept:** infra connections (appinsights, cosmosdb, search, storage), `crimedataagent`, and the
+  verified **`fabriciq-dataagent-vnet`** (workspace-level private-link RemoteTool).
