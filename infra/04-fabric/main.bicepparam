@@ -2,7 +2,7 @@ using './main.bicep'
 
 // Fabric workspace object ID (GUID). REQUIRED — fill from the Fabric portal URL
 // after /groups/. Deployment will fail with the placeholder below.
-param workspaceId = '<FABRIC_WORKSPACE_ID>'
+param workspaceId = '98edd5b8-482a-444b-8756-134251b3566e'
 
 // Entra tenant ID (defaults to the subscription tenant if omitted).
 param tenantId = '7b3b2559-0c78-44e7-8c57-8455603aca36'

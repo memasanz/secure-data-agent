@@ -36,10 +36,9 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 ## Phases & acceptance criteria
 
 ### Phase 1 — Deploy Fabric infra
-- [ ] 1.1 Deploy **capacity** (`04-fabric/capacity.bicep`, F4) → Succeeded
-- [ ] 1.2 Create **workspace**, assign to capacity → capture `workspaceId`
-- [ ] 1.3 Deploy **workspace private link** (`04-fabric/main.bicep`) → PE in snet-pe + DNS
-      _(prereqs: Microsoft.Fabric RP registered; tenant network-rules toggle — may be BLOCKED)_
+- [x] 1.1 Deploy **capacity** (`04-fabric/capacity.bicep`, F4) → **Succeeded** (`fabricfoundrycap`, GUID `01b669db-…`, Active)
+- [x] 1.2 Create **workspace**, assign to capacity → `fabric-foundry-ws` = `98edd5b8-482a-444b-8756-134251b3566e`
+- [ ] 1.3 Deploy **workspace private link** (`04-fabric/main.bicep`) → **DEFERRED to Phase 5** (per D2: locking down now would cut off the public REST automation; also needs an interactive tenant inbound-rules toggle)
 
 ### Phase 2 — Sample data → Lakehouse
 - [ ] 2.1 Generate synthetic **retail sales** dataset (CSV/Parquet)
@@ -63,3 +62,4 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 |------------|-------|--------|
 | 2026-09-15T~02:05 | 0 | Sprint plan created; starting Phase 1. |
 | 2026-09-15T~02:40 | 0 | VPN connected; PEs reachable on 443. Corp NRPT overrides push privatelink names to public DNS and no local admin — system DNS stays public. Foundry to stay private; Phase 4 will use `curl --resolve`. Capacity set to F4. |
+| 2026-09-16T02:22 | 1 | 1.1 F4 capacity `fabricfoundrycap` deployed (Active). 1.2 workspace `fabric-foundry-ws` (`98edd5b8-…`) created on it. 1.3 private-link DEFERRED to hardening (D2). Starting Phase 2 (data → Lakehouse). |
