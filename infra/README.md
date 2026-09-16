@@ -86,6 +86,12 @@ This workload uses **workspace-level** private link (scoped to one workspace), *
 #### Inbound — lock down the workspace (workspace-level private link)
 1. **Prereq — capacity**: the workspace must be on a **Fabric capacity (F SKU)**. P (Premium) and
    trial capacities are **not** supported. (Workspace settings → License info.)
+   You can create the workspace and assign it to a capacity with the Stage 04 script:
+   ```powershell
+   ./infra/04-fabric/create-workspace.ps1 -ListCapacities            # find an F-SKU capacity id
+   ./infra/04-fabric/create-workspace.ps1 -DisplayName 'fabric-foundry-ws' -CapacityId <capacity-guid>
+   ```
+   It prints the new **workspace ID** — use it in the next steps.
 2. **Prereq — tenant toggle**: a Fabric admin enables **Tenant settings → `Configure workspace-level
    inbound network rules`** (Enable workspace inbound access protection). This is *not* tenant-level
    private link.
