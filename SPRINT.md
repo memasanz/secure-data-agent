@@ -42,7 +42,7 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 ### Phase 2 — Sample data → Lakehouse
 - [x] 2.1 Generate synthetic **retail sales** dataset (CSV) → `data/generate_retail_sales.py` → 200 customers, 30 products, 5000 sales
 - [x] 2.2 Create a **Lakehouse** in the workspace → `RetailSales` = `0d46a133-70da-42bb-a23f-43019b7d605c` (SQL endpoint provisioned)
-- [ ] 2.3 Load the data into the Lakehouse (writing Delta tables to OneLake `Tables/` via delta-rs) — IN PROGRESS
+- [x] 2.3 Load the data into the Lakehouse (Delta tables written to OneLake `Tables/` via delta-rs) → `customers` (200), `products` (30), `sales` (5000) — all Managed Delta, confirmed queryable
 
 ### Phase 3 — Fabric data agent
 - [ ] 3.1 Create a **Fabric data agent** over the Lakehouse
@@ -63,3 +63,4 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 | 2026-09-15T~02:40 | 0 | VPN connected; PEs reachable on 443. Corp NRPT overrides push privatelink names to public DNS and no local admin — system DNS stays public. Foundry to stay private; Phase 4 will use `curl --resolve`. Capacity set to F4. |
 | 2026-09-16T02:22 | 1 | 1.1 F4 capacity `fabricfoundrycap` deployed (Active). 1.2 workspace `fabric-foundry-ws` (`98edd5b8-…`) created on it. 1.3 private-link DEFERRED to hardening (D2). Starting Phase 2 (data → Lakehouse). |
 | 2026-09-16T02:27 | 2 | 2.1 sample data generated (`data/generate_retail_sales.py`: 200 customers / 30 products / 5000 sales). 2.2 Lakehouse `RetailSales` (`0d46a133-…`) created, SQL endpoint provisioned. 2.3 loading Delta tables to OneLake `Tables/` via delta-rs — in progress. Also scrubbed identifiers + placeholdered capacity admin. |
+| 2026-09-16T02:33 | 2 | 2.3 done — `customers`/`products`/`sales` written as Managed Delta tables, confirmed via Lakehouse tables API. Phase 2 complete. Starting Phase 3 (Fabric data agent). |
