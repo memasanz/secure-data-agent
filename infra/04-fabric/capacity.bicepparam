@@ -9,6 +9,8 @@ param location = 'eastus2'
 param skuName = 'F4'
 
 // Capacity admins (Entra UPNs or object IDs). REQUIRED.
+// Replace the placeholder with your Entra UPN (e.g. you@contoso.onmicrosoft.com)
+// or object ID before deploying. See infra/README.md (Stage 04).
 param adminMembers = [
-  'admin@MngEnvMCAP272547.onmicrosoft.com'
+  '<CAPACITY_ADMIN_UPN_OR_OBJECT_ID>'
 ]

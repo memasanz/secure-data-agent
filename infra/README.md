@@ -109,8 +109,12 @@ This workload uses **workspace-level** private link (scoped to one workspace), *
 
 #### Inbound — lock down the workspace (workspace-level private link)
 1. **Prereq — capacity**: the workspace must be on a **Fabric capacity (F SKU)**. P (Premium) and
-   trial capacities are **not** supported. Create one with Bicep (edit `capacity.bicepparam` for
-   name/SKU/admins first):
+   trial capacities are **not** supported. Create one with Bicep — first edit
+   `infra/04-fabric/capacity.bicepparam` and set:
+   - `capacityName` (lowercase letters/digits, 3–63 chars) and `skuName` (e.g. `F4`);
+   - `adminMembers` — **replace the `<CAPACITY_ADMIN_UPN_OR_OBJECT_ID>` placeholder** with your Entra
+     UPN (e.g. `you@contoso.onmicrosoft.com`) or object ID. This is **required**; deployment fails on
+     the placeholder.
    ```powershell
    az deployment group create -g $RG `
      -f infra/04-fabric/capacity.bicep -p infra/04-fabric/capacity.bicepparam
