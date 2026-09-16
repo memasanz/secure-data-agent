@@ -142,3 +142,38 @@ co-locate capacity + Foundry region.
 | 2026-09-16T05:10 | 4 | Built Phase 4: created Foundry project connection `fabric-retailsales` (ARM, CustomKeys w/ workspace_id+artifact_id) and a `gpt-5.1` prompt agent with `MicrosoftFabricPreviewTool`. Fixed an httpx2/brotli decoder crash (uninstalled Brotli). Tool call fails: *"Workspace ID and Artifact ID are required from connection details"* — tried keys/metadata/target/all case spellings, inline `additional_properties`, granted **Foundry Project Manager** (`Microsoft.CognitiveServices/*`). Setting `target=api.fabric.microsoft.com` changed the error (service now recognizes it as AzureFabric) but still can't read IDs → looks like a **preview gap for CLI/ARM-created connections**. User then added the tool via the **portal** and it also "seems blocked". Opened **Spike S1** to isolate network vs auth vs connection. |
 | 2026-09-16T05:40 | S1 | Spike S1 running. T1 ✅ Fabric host resolves to **public** IP via the private resolver; T7 ✅ capacity+Foundry both **East US 2**; NSG permits internet egress; T4 shows the run failure reproduces over the **public** path (network-independent). **Interim: not a network problem for the run** — root cause points to **auth/OBO consent (H2)** for the data-agent run + **preview connection ID-read (H3)** for the Foundry tool. Next: get exact portal error (timeout vs auth) and, if needed, run in-VNet probe (T2/T3). |
 | 2026-09-16T08:15 | S1 | **Spike CLOSED — NOT network.** Proved with raw `curl`: `initialize` on the Fabric MCP endpoint returns **HTTP 200** + valid JSON-RPC (`DataAgent MCP Server v1.0.0`) using only the az-CLI token over the public internet. Fabric tenant confirms private link off / public not blocked (Foundry is the private resource, not Fabric). Only the data-agent **run/task** fails, identically over the public path → **root cause = auth/consent (H2)**; the CLI client isn't consented for the data-agent Copilot run that the Fabric portal's first-party client uses. Secondary **H3**: Foundry tool can't read IDs from a CLI/ARM-created connection. Fix = Foundry native tool w/ **portal-created** connection (consented OBO), or a token from a consented client. In-VNet probe unnecessary. |
+
+---
+
+## S2 — H3 SOLVED (connection ID-read) + H2 narrowed to OBO run consent
+
+**H3 ROOT CAUSE = a documentation bug (wrong key names).** The Foundry Fabric tool reads the
+workspace/artifact IDs from the connection's `credentials.keys` using **hyphenated** key names —
+`workspace-id` and `artifact-id` — NOT the underscore names (`workspace_id`/`artifact_id`) shown in
+the public doc. Discovered by running `listsecrets` on a **portal-created** connection
+(`fabric_dataagent_preview_*`): it stores `metadata:{"type":"fabric_dataagent_preview"}`, `target:"-"`,
+and `credentials.keys:{"workspace-id":..., "artifact-id":...}`.
+
+**Proof:** a REST/ARM `PUT` connection built with that exact shape (hyphenated keys) changed the tool
+error from `400 Workspace ID and Artifact ID are required` → `400 Fabric run failed during execution`.
+i.e. the service now READS the IDs and actually invokes the Fabric data-agent run. `data/setup_fabric_connection.py`
+updated to emit the correct shape; REST-created connections are now equivalent to portal-created ones.
+**H3 is closed — scripted/automated connection setup is unblocked.**
+
+**Remaining blocker = H2 (run authorization).** With a correct connection (portal- OR REST-created), the
+Foundry native Fabric tool consistently returns `400 ... "Fabric run failed during execution" code=tool_user_error`
+(non-transient across retries and multiple questions). `tool_user_error` + the doc's `unauthorized`
+troubleshooting row point to the **OBO identity being unable to execute the data-agent run** — the same
+consent gap that fails every token-based path (bare MCP with az-CLI token) while the **interactive Fabric
+portal** (which carries full Copilot/data-agent delegated consent) succeeds (T6).
+
+**Definitive next test (needs user, interactive):** run the SAME native-Fabric-tool agent from the
+**Foundry portal playground** (Agents → add Microsoft Fabric tool → the portal connection → ask a data
+question). The portal can complete an interactive OBO consent the SDK cannot trigger:
+- If it **answers** → the blocker is purely SDK-side consent; wire the working connection into the agent and finish Phase 4.
+- If it **fails the same way** → OBO consent for the Foundry first-party app must be granted by a
+  Fabric/Entra **tenant admin** (admin-consent the Fabric data-agent delegated permission), or enable any
+  tenant setting gating data-agent consumption by non-Fabric services.
+
+**Cleanup pending:** throwaway test agents (`fabtest-*`, `retail-mdkeys`, `retail-insights`, `RetailInsightsAgent*`)
+and connections (`fabric-ds-clean`, `fabric-hyphen-test`, duplicate `fabric_dataagent_preview_*`).
