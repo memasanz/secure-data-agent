@@ -93,7 +93,6 @@ Full design rationale, decisions, and open items:
 .
 ├── README.md                                # this file
 ├── fabric-foundry-private-network-spec.md   # architecture spec
-├── SPRINT.md                                # build log / status history
 ├── infra/
 │   ├── README.md                            # detailed deploy runbook
 │   ├── 01-network/                          # VNet + 4 subnets + NSGs             (authored)
