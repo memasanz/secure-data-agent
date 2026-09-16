@@ -108,10 +108,15 @@ This workload uses **workspace-level** private link (scoped to one workspace), *
    only because it assumes no existing inbound path; you already have the VPN + resolver):
    `nslookup {workspaceid}.z{xy}.w.api.fabric.microsoft.com` → returns a **private** IP
    (`workspaceid` = workspace object ID without dashes; `xy` = its first two characters).
-7. **Deny public access**: Workspace settings → **Inbound networking** → **Workspace connection
+7. **Deny public access**: run the Stage 04 script (REST API — this step is **not** ARM-deployable).
+   Only run it **after** the private endpoint is verified over the VPN, or you can lock yourself out:
+   ```powershell
+   ./infra/04-fabric/set-deny-public-access.ps1 -WorkspaceId <your-fabric-workspace-guid>
+   # revert with:  -Action Allow
+   ```
+   Equivalent portal path: Workspace settings → **Inbound networking** → **Workspace connection
    settings** → **Allow connections from selected networks and workspace level private links** →
-   **Apply**. Can take up to ~30 min to take effect. (This step is a Fabric workspace communication
-   policy — **not** ARM-deployable; use the portal or the Fabric REST API.)
+   **Apply**. Can take up to ~30 min to take effect.
 
 #### Outbound — Fabric → Foundry (managed private endpoint)
 8. Fabric → **Managed private endpoints** → create an MPE targeting the Foundry resource
