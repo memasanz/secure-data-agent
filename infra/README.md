@@ -14,7 +14,7 @@ Everything targets **eastus2** and a **single resource group**. The VNet uses
 | 01 | `01-network/` | VNet + 4 subnets (`snet-pe`, `snet-agents`, `snet-dnsresolver`, `GatewaySubnet`) + NSGs | This repo |
 | 02 | `02-access/` | **P2S VPN Gateway** (Entra auth) + **Azure DNS Private Resolver** | This repo |
 | 03 | `03-foundry/` | Foundry account + **BYO Storage/Search/Cosmos** + private endpoints + agent capability host | Upstream Microsoft sample |
-| 04 | `04-fabric/` | **Fabric workspace-level private link** + private endpoint (`snet-pe`) + `privatelink.fabric.microsoft.com` DNS | This repo |
+| 04 | `04-fabric/` | **Fabric capacity (F SKU)** + **workspace-level private link** + private endpoint (`snet-pe`) + `privatelink.fabric.microsoft.com` DNS | This repo |
 
 Stage 03 reuses the upstream **microsoft-foundry/foundry-samples** template
 (`15-private-network-standard-agent-setup`) rather than re-implementing its fragile
@@ -85,13 +85,21 @@ This workload uses **workspace-level** private link (scoped to one workspace), *
 
 #### Inbound — lock down the workspace (workspace-level private link)
 1. **Prereq — capacity**: the workspace must be on a **Fabric capacity (F SKU)**. P (Premium) and
-   trial capacities are **not** supported. (Workspace settings → License info.)
-   You can create the workspace and assign it to a capacity with the Stage 04 script:
+   trial capacities are **not** supported. Create one with Bicep (edit `capacity.bicepparam` for
+   name/SKU/admins first):
    ```powershell
-   ./infra/04-fabric/create-workspace.ps1 -ListCapacities            # find an F-SKU capacity id
+   az deployment group create -g $RG `
+     -f infra/04-fabric/capacity.bicep -p infra/04-fabric/capacity.bicepparam
+   ```
+   > **Cost:** F-SKU capacities bill hourly while running. **Pause** the capacity when idle
+   > (portal → capacity → Pause, or `az resource invoke-action --action pause`).
+
+   Then create the workspace and assign it to the capacity:
+   ```powershell
+   ./infra/04-fabric/create-workspace.ps1 -ListCapacities            # find the F-SKU capacity id (GUID)
    ./infra/04-fabric/create-workspace.ps1 -DisplayName 'fabric-foundry-ws' -CapacityId <capacity-guid>
    ```
-   It prints the new **workspace ID** — use it in the next steps.
+   `create-workspace.ps1` prints the new **workspace ID** — use it in the next steps.
 2. **Prereq — tenant toggle**: a Fabric admin enables **Tenant settings → `Configure workspace-level
    inbound network rules`** (Enable workspace inbound access protection). This is *not* tenant-level
    private link.
