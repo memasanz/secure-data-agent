@@ -212,3 +212,39 @@ grounded in the RetailSales lakehouse through the published `RetailSalesAgent` d
   (outbound still Allow). Takes up to ~30 min to propagate. VPN clients + Foundry in-VNet agent egress
   resolve the workspace FQDN privately, so both should continue to work; public clients are blocked.
 - **Pending verification** (after propagation): bare MCP over VPN + Foundry OBO still answer.
+
+---
+
+## S4 — Foundry↔Fabric communication UNDER lockdown (SOLVED in config; verify over VPN)
+
+**Symptom:** After deny-public was applied to the workspace, the native Foundry `fabric_dataagent_preview`
+tool (older `FabricTool`) began returning **424**. That tool calls the *shared* `api.fabric.microsoft.com`
+host, which now resolves to a public frontend and is blocked by the workspace deny-public rule.
+
+**Authoritative fix (per docs):**
+`learn.microsoft.com/azure/foundry/agents/how-to/tools/fabric-iq#virtual-network-support` states a Fabric
+**data agent supports BOTH tenant-level and workspace-level private link**. For **workspace-level** private
+link you must **not** use the shared host; instead create a Foundry **RemoteTool** connection whose:
+- `category = RemoteTool`, `authType = UserEntraToken` (OBO identity passthrough),
+- `target = https://{wsid-nodashes}.z{xy}.w.api.fabric.microsoft.com/v1/mcp/workspaces/{wsid}/dataagents/{agentId}/agent`
+  (the **workspace-specific private FQDN**, which resolves to the private PE IP inside the VNet), and
+- `audience = https://analysis.windows.net/powerbi/api` (Power BI resource; `DataAgent.Execute.All` scope).
+
+Reference it from the agent via the new **`FabricIQPreviewTool(project_connection_id=..., require_approval="never")`**
+(SDK `azure-ai-projects >= 2.2.0`), using the prompt-agent + `responses.create` flow.
+
+**Root cause of the residual failure:** the pre-existing VNet connection `RetailSalesAgent` already targeted
+the private FQDN with `UserEntraToken`, but its **`audience` was wrong** (`https://api.fabric.microsoft.com`
+instead of `https://analysis.windows.net/powerbi/api`) → token rejected for data-agent execution.
+
+**Applied:**
+- Created connection **`fabriciq-dataagent-vnet`** with the correct target/authType/**audience** (per doc).
+- Corrected **`RetailSalesAgent`** connection audience to `https://analysis.windows.net/powerbi/api`.
+- Added `data/test_fabriciq_vnet.py` (FabricIQ preview tool + prompt agent + responses API).
+
+**Verification:** requires running the client from inside the VNet (Foundry data plane
+`ffndryfsnn.services.ai.azure.com` = private `192.168.0.8`). VPN gateway `vpngw-fabric-foundry`
+(P2S / OpenVPN / Entra auth, pool `172.16.0.0/24`) now provisioned (`Succeeded`). Once connected to the
+P2S VPN (Azure VPN Client, import `azurevpnconfig.xml`), run:
+`$env:PYTHONIOENCODING="utf-8"; $env:MODEL_DEPLOYMENT_NAME="gpt-5.1"; python data\test_fabriciq_vnet.py`
+→ expect `5,000 rows` with citation, routed entirely over the workspace private link (both services locked down).
