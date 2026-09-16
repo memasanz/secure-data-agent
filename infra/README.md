@@ -3,9 +3,11 @@
 Bicep to stand up the private-networking architecture described in
 [`../fabric-foundry-private-network-spec.md`](../fabric-foundry-private-network-spec.md).
 
-Everything targets **eastus2** and a **single resource group**. The VNet uses
-**192.168.0.0/16** because the Foundry Agent Service injection subnet must be in the
-**172.x / 192.x** range (the platform rejects 10.x).
+Everything deploys into a **single resource group** and targets **eastus2**, with one deliberate
+exception: **Azure AI Search runs in `westus2`** because eastus2/westus3 were out of Search capacity
+(see [AI Search region/capacity](#deploy)). Its private endpoint and DNS still live in the eastus2
+VNet, so it remains fully private. The VNet uses **192.168.0.0/16** because the Foundry Agent Service
+injection subnet must be in the **172.x / 192.x** range (the platform rejects 10.x).
 
 ## Layout
 
