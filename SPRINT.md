@@ -46,7 +46,7 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 
 ### Phase 3 — Fabric data agent
 - [x] 3.1 Create a **Fabric data agent** over the Lakehouse → `RetailSalesAgent` = `ef2b5550-b3ea-4c1e-99bc-5590e8aab60f` (via `fabric-data-agent-sdk`), datasource = RetailSales lakehouse, **published**
-- [ ] 3.2 Configure the data source + instructions; validate a sample question — AI instructions set; MCP endpoint `…/v1/mcp/workspaces/98edd5b8-…/dataagents/ef2b5550-…/agent`; validation in progress
+- [ ] 3.2 Configure the data source + instructions; validate a sample question — **config verified** (AI instructions set; 18 columns across `sales`/`customers`/`products` selected & published; SQL endpoint returns correct counts 5000/200/30). **MCP endpoint live**, tool `DataAgent_RetailSalesAgent` discoverable. ⚠️ **BLOCKED on live run**: every query (even "Hello") returns *"The Data Agent run failed before producing a result."* on both F4 and F16 capacities; tenant `EnableAOAI=True`. API exposes no detail — needs portal error to root-cause.
 
 ### Phase 4 — Foundry agent + MCP
 - [ ] 4.1 Build an **agent in Foundry** (gpt-5.1, project `fabricagent`)
@@ -65,3 +65,4 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 | 2026-09-16T02:27 | 2 | 2.1 sample data generated (`data/generate_retail_sales.py`: 200 customers / 30 products / 5000 sales). 2.2 Lakehouse `RetailSales` (`0d46a133-…`) created, SQL endpoint provisioned. 2.3 loading Delta tables to OneLake `Tables/` via delta-rs — in progress. Also scrubbed identifiers + placeholdered capacity admin. |
 | 2026-09-16T02:33 | 2 | 2.3 done — `customers`/`products`/`sales` written as Managed Delta tables, confirmed via Lakehouse tables API. Phase 2 complete. Starting Phase 3 (Fabric data agent). |
 | 2026-09-16T02:45 | 3 | 3.1 data agent `RetailSalesAgent` (`ef2b5550-…`) created via fabric-data-agent-sdk, lakehouse datasource added, **published**. 3.2 AI instructions set; validating via MCP endpoint next. Starting Phase 4 (Foundry agent + Fabric tool). |
+| 2026-09-16T03:05 | 3 | 3.2 config + data verified (SQL endpoint 5000/200/30; 18 cols selected/published; MCP tool discoverable). But live runs fail generically ("run failed before producing a result") for any question incl. "Hello", on both F4 and F16 — model/Copilot run failing, no API detail. Ruled out: capacity (both fail), tenant AOAI (enabled), table selection (done), data path (SQL works). Needs Fabric portal error msg to root-cause. Added pyodbc SQL check + MCP/inspect scripts. |
