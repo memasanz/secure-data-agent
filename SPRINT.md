@@ -3,8 +3,7 @@
 **Owner:** autonomous execution (Copilot CLI)
 **Started:** 2026-09-15
 **Repo:** memasanz/secure-data-agent
-**Subscription:** ME-MngEnvMCAP272547-memasanz-1 (`7ee2b43a-...`)
-**Resource group:** `rg-fabric-foundry-eus2` · **Region:** eastus2
+**Subscription / Resource group:** see `az account show`; RG `rg-fabric-foundry-eus2` · **Region:** eastus2
 
 ## Goal
 Deploy the remaining Fabric infra, generate sample data into a Lakehouse, create a Fabric
@@ -17,8 +16,8 @@ Foundry** — all within the private-network design already deployed (Stages 01�
   (AAD only). Endpoint: `https://ffndryfsnn.cognitiveservices.azure.com/`.
 - Search is BYO in **westus2** (`ffndry-search-westus2`, basic) — eastus2/westus3 lacked capacity.
 - Model deployed: **gpt-5.1** (GlobalStandard, 2025-11-13) in project `fabricagent`.
-- Fabric REST (`api.fabric.microsoft.com`) is reachable publicly; identity is
-  `admin@MngEnvMCAP272547.onmicrosoft.com` (`03283c82-...`).
+- Fabric REST (`api.fabric.microsoft.com`) is reachable publicly; identity is the
+  current signed-in Entra user (see `az account show`).
 
 ## Decisions
 - **D1** — Fabric capacity: **F4**, eastus2, admin = current user.
