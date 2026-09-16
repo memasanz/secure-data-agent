@@ -85,6 +85,44 @@ for a runnable end-to-end example, and the official
 Full design rationale, decisions, and open items:
 **[`fabric-foundry-private-network-spec.md`](fabric-foundry-private-network-spec.md)**.
 
+### Publishing the agent to Teams / Microsoft 365 (public-ingress exception)
+
+Microsoft 365 **does not support private connectivity** to agents — it requires the agent's
+**Activity Protocol** endpoint to be publicly routable. To publish this private-network agent to
+**Teams / M365 Copilot**, set **`enable_m365_public_endpoint: true`** in the agent's `activity`
+protocol configuration (PATCH the agent):
+
+```http
+PATCH {endpoint}/agents/{agent_name}?api-version=v1
+{
+  "agent_endpoint": {
+    "protocol_configuration": { "responses": {}, "activity": { "enable_m365_public_endpoint": true } },
+    "authorization_schemes": [ { "type": "Entra" }, { "type": "BotServiceRbac" } ]
+  }
+}
+```
+
+What this does and does **not** change:
+
+- Opens **only the Activity Protocol route**, guarded by **service-managed source-IP filtering**
+  (allows Azure Bot Service / M365 infra, blocks all other public networks). **No** change to the
+  Foundry account network settings and **no** public ingress in your VNet. Other protocols and
+  project APIs stay private.
+- **Your sensitive-data path stays private** — this affects only how a user's Teams message reaches
+  the agent endpoint. The agent's **Foundry→Fabric data-agent query still flows entirely over the
+  private link**.
+- **Auth still applies** — keep `BotServiceRbac` (or `BotServiceTenant`) plus `Entra` in
+  `authorization_schemes`; network filtering does not replace token/tenant/RBAC validation.
+- **Gotcha:** the PATCH **replaces** `protocol_configuration` and `authorization_schemes` — include
+  every protocol and scheme you need to retain. Teams publishing also requires a **persistent,
+  published** agent (stable name/version), not the ephemeral one created by `test_fabriciq_vnet.py`.
+
+> **Security note (sensitive data):** this is a deliberate **public-ingress exception on the Teams
+> channel route**, mitigated by source-IP filtering + Entra/BotServiceRbac + tenant checks. Weigh it
+> against the "no public traffic" goal before enabling. Docs:
+> [Allow Microsoft 365 traffic to a private-network agent](https://learn.microsoft.com/azure/foundry/agents/how-to/configure-agent#allow-microsoft-365-traffic-to-a-private-network-agent)
+> · [Publish agents to M365 Copilot and Teams (REST)](https://learn.microsoft.com/azure/foundry/agents/how-to/publish-copilot-virtual-network).
+
 ---
 
 ## Repository layout
