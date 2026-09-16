@@ -58,7 +58,7 @@ Foundry** — all within the private-network design already deployed (Stages 01�
 
 ## Spike S1 — Isolate the Foundry↔Fabric data-agent failure (network vs auth vs connection)
 
-**Status:** IN PROGRESS · **Time-box:** ~2h · **Entered:** 2026-09-16
+**Status:** NETWORK RULED OUT · root cause = auth/consent (H2) + preview connection (H3) · **Time-box:** ~2h · **Entered:** 2026-09-16
 **Trigger:** The Fabric data agent works interactively in the Fabric portal, but (a) the bare MCP
 call from a script returns *"run failed before producing a result"*, and (b) the Foundry
 `fabric_dataagent_preview` tool (portal- and ARM-created connections) returns *"Workspace ID and
@@ -86,9 +86,25 @@ read workspace/artifact IDs from a CLI/ARM-created connection)?
 | T2 | From INSIDE the VNet (probe ACI/VM in `snet-pe`): nslookup + `curl -sS https://api.fabric.microsoft.com` | H1 DNS+egress | pending (probe) |
 | T3 | From inside the VNet: full MCP `call_tool` with a Fabric token (reproduce agent path) | H1 vs H2 | pending (probe) |
 | T4 | From my machine over the PUBLIC internet: MCP `call_tool` (endpoint is public) | H2 (network-independent) | ⚠️ run fails ("run failed before producing a result") over public path → **network-independent → auth** |
-| T5 | MCP Inspector (`npx @modelcontextprotocol/inspector`) against the endpoint with a token | client-independence | pending |
+| T5 | MCP Inspector (`npx @modelcontextprotocol/inspector`) against the endpoint with a token | client-independence | superseded by T9 |
 | T6 | Fabric portal interactive chat | control (agent health) | ✅ works |
 | T7 | Compare Fabric capacity region vs Foundry region (`eastus2`) | H4 | ✅ both **East US 2** → H4 ruled out |
+| T9 | **Raw `curl` MCP flow from client machine** (public internet, az-CLI token) | reachability vs run | ✅ `initialize` → **HTTP 200**, clean JSON-RPC from `DataAgent MCP Server v1.0.0`; endpoint reachable + authenticated. Only the `tools/call` **task/run** fails ("run failed before producing a result"). `home-cluster-uri`=west-us3 (tenant home) while capacity=East US 2. |
+
+**S1 CONCLUSION — NOT a network/private-link problem.** Plain `curl` from the client machine reaches
+the Fabric MCP endpoint and gets **HTTP 200** on `initialize` with a valid JSON-RPC response, using only
+the az-CLI bearer token over the public internet. Fabric is open (`AllowAccessOverPrivateLinks=False`,
+`BlockAccessFromPublicNetworks=False`; Foundry — not Fabric — is the private resource). A network block
+would fail at connect/TLS, not return HTTP 200. The sole failure is the data-agent **run/task** under a
+non-portal client identity → **root cause = H2 auth/consent** (the Azure-CLI app isn't consented for the
+data-agent Copilot run the Fabric first-party portal client uses). Secondary: **H3** — the Foundry
+`fabric_dataagent_preview` tool can't read workspace/artifact IDs from a CLI/ARM-created connection
+(portal-created connection needed). H1/H4 ruled out.
+
+**Fix directions:** (a) consume via the Foundry native Fabric tool using a **portal-created** connection
+(Foundry OBO uses a consented first-party app — the supported path); or (b) obtain a token from a client
+that carries the data-agent delegated consent (portal/app-registration with admin consent) for bare-MCP
+use. Bare az-CLI tokens will keep failing the run by design.
 
 **Interim finding (S1):** Network is **unlikely the root cause of the run failure** — DNS resolves the
 Fabric host to a public IP from the VNet resolver, capacity+Foundry are co-located in East US 2, the
@@ -125,3 +141,4 @@ co-locate capacity + Foundry region.
 | 2026-09-16T03:30 | 3→4 | **Data agent CONFIRMED WORKING interactively in the Fabric portal** (user ran a query successfully). Bare-script MCP call still fails — az-CLI token lacks the Copilot/AOAI delegation the run needs from a non-interactive client; this is a harness limitation, not an agent fault. Proper consumption path = the Foundry **Microsoft Fabric** tool (identity passthrough via a project connection). Marking 3.2 DONE (agent functional) and moving to Phase 4: build the Foundry agent + Fabric tool connection. |
 | 2026-09-16T05:10 | 4 | Built Phase 4: created Foundry project connection `fabric-retailsales` (ARM, CustomKeys w/ workspace_id+artifact_id) and a `gpt-5.1` prompt agent with `MicrosoftFabricPreviewTool`. Fixed an httpx2/brotli decoder crash (uninstalled Brotli). Tool call fails: *"Workspace ID and Artifact ID are required from connection details"* — tried keys/metadata/target/all case spellings, inline `additional_properties`, granted **Foundry Project Manager** (`Microsoft.CognitiveServices/*`). Setting `target=api.fabric.microsoft.com` changed the error (service now recognizes it as AzureFabric) but still can't read IDs → looks like a **preview gap for CLI/ARM-created connections**. User then added the tool via the **portal** and it also "seems blocked". Opened **Spike S1** to isolate network vs auth vs connection. |
 | 2026-09-16T05:40 | S1 | Spike S1 running. T1 ✅ Fabric host resolves to **public** IP via the private resolver; T7 ✅ capacity+Foundry both **East US 2**; NSG permits internet egress; T4 shows the run failure reproduces over the **public** path (network-independent). **Interim: not a network problem for the run** — root cause points to **auth/OBO consent (H2)** for the data-agent run + **preview connection ID-read (H3)** for the Foundry tool. Next: get exact portal error (timeout vs auth) and, if needed, run in-VNet probe (T2/T3). |
+| 2026-09-16T08:15 | S1 | **Spike CLOSED — NOT network.** Proved with raw `curl`: `initialize` on the Fabric MCP endpoint returns **HTTP 200** + valid JSON-RPC (`DataAgent MCP Server v1.0.0`) using only the az-CLI token over the public internet. Fabric tenant confirms private link off / public not blocked (Foundry is the private resource, not Fabric). Only the data-agent **run/task** fails, identically over the public path → **root cause = auth/consent (H2)**; the CLI client isn't consented for the data-agent Copilot run that the Fabric portal's first-party client uses. Secondary **H3**: Foundry tool can't read IDs from a CLI/ARM-created connection. Fix = Foundry native tool w/ **portal-created** connection (consented OBO), or a token from a consented client. In-VNet probe unnecessary. |
