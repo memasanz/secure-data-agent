@@ -253,9 +253,26 @@ This workload uses **workspace-level** private link (scoped to one workspace), *
 > · [Enable workspace inbound access protection](https://learn.microsoft.com/fabric/security/security-workspace-enable-inbound-access-protection)
 > · [Fabric IQ tool — virtual network support](https://learn.microsoft.com/azure/foundry/agents/how-to/tools/fabric-iq#virtual-network-support)
 
-### RBAC for the agent (if not handled by the sample)
-Assign to the Foundry project managed identity: Cosmos DB Built-in Data Contributor;
-Search Index Data Contributor + Search Service Contributor; Storage Blob Data Contributor/Owner.
+### RBAC for the agent — assigned by the sample (verify only)
+The Stage 03 sample **automatically assigns** the roles the agent needs to the **AI project's**
+managed identity — you do **not** normally assign these by hand:
+
+| Resource | Role(s) | Kind |
+|----------|---------|------|
+| AI Search | Search Index Data Contributor, Search Service Contributor | ARM |
+| Storage | Storage Blob Data Contributor (account), Storage Blob Data Owner (containers) | ARM |
+| Cosmos DB | Cosmos DB Operator (account) | ARM |
+| Cosmos DB | Cosmos DB Built-in Data Contributor (`enterprise_memory` containers) | data-plane SQL role |
+
+Confirm them read-only with:
+
+```powershell
+./infra/03-foundry/verify-agent-rbac.ps1
+# -ResourceGroup / -AccountName / -ProjectName to target a different deployment
+```
+
+It resolves the project managed identity and reports PASS/FAIL per role (exit 0 if all present).
+Only assign roles manually if that script reports a gap (e.g. a partial/failed sample deployment).
 
 ### Data + agent wiring (from a P2S-connected machine)
 The Python scripts in [`../data/`](../data/) create the sample data, publish the Fabric data agent,
