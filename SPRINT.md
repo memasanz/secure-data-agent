@@ -204,3 +204,11 @@ grounded in the RetailSales lakehouse through the published `RetailSalesAgent` d
   (workspace-level inbound rules) ON; tenant-level PL/public-block correctly OFF.
 - **Next**: verify workspace FQDN resolves to a private IP over the VPN → run `set-deny-public-access.ps1`
   → re-verify Foundry→Fabric OBO still routes (privately) and answers.
+
+### Phase 5 — deny-public applied (verifying)
+- Verified before locking: Fabric PE **Approved**; `privatelink.fabric.microsoft.com` has A records for
+  `.z98.w.api`=192.168.0.26 (+ blob/c/dfs/onelake); workspace FQDN resolves to **192.168.0.26 (private)** over VPN.
+- Ran `set-deny-public-access.ps1` → workspace inbound `publicAccessRules.defaultAction = Deny`
+  (outbound still Allow). Takes up to ~30 min to propagate. VPN clients + Foundry in-VNet agent egress
+  resolve the workspace FQDN privately, so both should continue to work; public clients are blocked.
+- **Pending verification** (after propagation): bare MCP over VPN + Foundry OBO still answer.
